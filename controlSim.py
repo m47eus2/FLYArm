@@ -14,7 +14,7 @@ I = (1/3)*mb*l**2 + ms*xs**2
 dt = 0.001
 T = 10
 N = int(T/dt)
-x1 = np.pi/2
+x1 = 0
 x2 = 0
 
 tList = []
@@ -22,9 +22,9 @@ x1List = []
 x2List = []
 uList = []
 
-kp = 1
-ki = 0
-kd = 0
+kp = 2
+ki = 5
+kd = 0.3
 xd = np.pi/2
 
 integralE = 0
