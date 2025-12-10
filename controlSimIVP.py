@@ -12,9 +12,9 @@ g = 9.81
 I = (1/3)*mb*l**2 + ms*xs**2
 
 xd = np.pi/2
-kp = 10
-ki = 4
-kd = 3
+kp = 25
+ki = 8
+kd = 3.5
 
 def model(t,X):
     x1, x2, intE = X
@@ -24,7 +24,7 @@ def model(t,X):
     dIntE = e
     u = kp*e + ki*intE + kd*de
 
-    if u: Fs=u
+    if u>0: Fs=u
     else: Fs=0
 
     dx1 = x2
