@@ -12,9 +12,9 @@ g = 9.81
 I = (1/3)*mb*l**2 + ms*xs**2
 
 xd = np.pi/2
-kp = 25
+kp = 30
 ki = 8
-kd = 3.5
+kd = 5
 
 def model(t,X):
     x1, x2, intE = X
