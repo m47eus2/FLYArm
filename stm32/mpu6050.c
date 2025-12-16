@@ -8,6 +8,7 @@
 #include "mpu6050.h"
 #include "i2c.h"
 #include <stdio.h>
+#include <math.h>
 
 
 // Biasy
@@ -19,6 +20,7 @@
 //>gyro_z:-36
 const int16_t accelConstBias[3] = {269, -304, 16384-17909};
 const int16_t gyroConstBias[3] = {781, -505, 36};
+const float a = 0.98f;
 
 uint8_t mpu6050_ReadReg(uint8_t reg){
 	uint8_t value = 0;
@@ -74,6 +76,26 @@ void mpu6050_ReadRawBias(int16_t *accelBias, int16_t *gyroBias){
 			gyroBias[i] = gyroAccum[i]/1000;
 		}
 	}
+}
+
+void mpu6050_ReadRoll(float *retRoll){
+	static float rollGyro = 0;
+	static float roll = 0;
+
+	float accel[3], gyro[3];
+	mpu6050_ReadScaledAccelGyro(accel, gyro);
+
+	// Accelerometer
+	float rollAcc = atan2f(accel[1], accel[2]) * (180.0f / M_PI);
+	retRoll[0] = rollAcc;
+
+	// Gyro
+	rollGyro = rollGyro + gyro[0] * 0.01f;
+	retRoll[1] = rollGyro;
+
+	// Sensor fusion
+	roll = a*(roll+(gyro[0]*0.01f)) + (1.0f-a)*rollAcc;
+	retRoll[2] = roll;
 }
 
 void mpu6050_Init(void){

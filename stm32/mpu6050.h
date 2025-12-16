@@ -26,6 +26,8 @@ void mpu6050_ReadScaledAccelGyro(float *accel, float *gyro);
 
 void mpu6050_ReadRawBias(int16_t *accelBias, int16_t *gyroBias);
 
+void mpu6050_ReadRoll(float *roll);
+
 void mpu6050_Init(void);
 
 #endif /* INC_MPU6050_H_ */

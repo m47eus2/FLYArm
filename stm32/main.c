@@ -61,7 +61,7 @@ void SystemClock_Config(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
-float accel[3], gyro[3];
+float accel[3], gyro[3], roll[3];
 int16_t accelBias[3], gyroBias[3];
 
 int __io_putchar(int ch){
@@ -75,6 +75,7 @@ int __io_putchar(int ch){
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
 	if(htim == &htim6){
 		mpu6050_ReadScaledAccelGyro(accel, gyro);
+		mpu6050_ReadRoll(roll);
 		//mpu6050_ReadRawBias(accelBias, gyroBias);
 	}
 }
@@ -137,6 +138,10 @@ int main(void)
 	printf(">gyro_x:%f\n", gyro[0]);
 	printf(">gyro_y:%f\n", gyro[1]);
 	printf(">gyro_z:%f\n", gyro[2]);
+
+	printf(">RollAcc:%f\n", roll[0]);
+	printf(">RollGyro:%f\n", roll[1]);
+	printf(">RollFused:%f\n", roll[2]);
 
 //	printf(">accel_x:%d\n", accelBias[0]);
 //	printf(">accel_y:%d\n", accelBias[1]);
