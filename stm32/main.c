@@ -62,7 +62,9 @@ void SystemClock_Config(void);
 /* USER CODE BEGIN 0 */
 
 float accel[3], gyro[3], roll[3];
+float dGyro;
 int16_t accelBias[3], gyroBias[3];
+volatile uint8_t dataReady = 0;
 
 int __io_putchar(int ch){
 	if(ch=='\n'){
@@ -74,13 +76,10 @@ int __io_putchar(int ch){
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
 	if(htim == &htim6){
-		mpu6050_ReadScaledAccelGyro(accel, gyro);
-		mpu6050_ReadRoll(roll);
+		//mpu6050_ReadScaledAccelGyro(accel, gyro);
+		mpu6050_ReadRoll(roll, &dGyro, accel, gyro);
 		//mpu6050_ReadRawBias(accelBias, gyroBias);
-		printf(">Gyro:%f\n", gyro[0]);
-		printf(">RollAcc:%f\n", roll[0]);
-		printf(">RollGyro:%f\n", roll[1]);
-		printf(">RollFused:%f\n", roll[2]);
+		dataReady = 1;
 	}
 }
 
@@ -133,29 +132,15 @@ int main(void)
 
   while (1)
   {
+	if(dataReady==1){
+		printf(">Gyro:%f\n", gyro[0]);
+		printf(">DGyro:%f\n", dGyro);
+		printf(">RollAcc:%f\n", roll[0]);
+		printf(">RollGyro:%f\n", roll[1]);
+		printf(">RollFused:%f\n", roll[2]);
 
-
-//	printf(">accel_x:%f\n", accel[0]);
-//	printf(">accel_y:%f\n", accel[1]);
-//	printf(">accel_z:%f\n", accel[2]);
-//
-//	printf(">gyro_x:%f\n", gyro[0]);
-//	printf(">gyro_y:%f\n", gyro[1]);
-//	printf(">gyro_z:%f\n", gyro[2]);
-//
-//	printf(">RollAcc:%f\n", roll[0]);
-//	printf(">RollGyro:%f\n", roll[1]);
-//	printf(">RollFused:%f\n", roll[2]);
-
-//	printf(">accel_x:%d\n", accelBias[0]);
-//	printf(">accel_y:%d\n", accelBias[1]);
-//	printf(">accel_z:%d\n", accelBias[2]);
-//
-//	printf(">gyro_x:%d\n", gyroBias[0]);
-//	printf(">gyro_y:%d\n", gyroBias[1]);
-//	printf(">gyro_z:%d\n", gyroBias[2]);
-
-	//HAL_Delay(100);
+		dataReady = 0;
+	}
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */

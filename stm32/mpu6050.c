@@ -10,8 +10,9 @@
 #include <stdio.h>
 #include <math.h>
 
+#define CONFIG 0x1A
 
-// Biasy
+// Biasy (default ranges)
 //>accel_x:-269
 //>accel_y:304
 //>accel_z:17909
@@ -50,6 +51,7 @@ void mpu6050_ReadScaledAccelGyro(float *accelScaled, float *gyroScaled){
 	int16_t accel[3], gyro[3];
 	mpu6050_ReadRawAccelGyro(accel, gyro);
 
+	// Scaling and biases
 	for(int i=0; i<3; i++){
 		accelScaled[i] = (accel[i] + accelConstBias[i]) / 16384.0f;
 		gyroScaled[i] = (gyro[i] + gyroConstBias[i]) / 131.0f;
@@ -78,9 +80,11 @@ void mpu6050_ReadRawBias(int16_t *accelBias, int16_t *gyroBias){
 	}
 }
 
-void mpu6050_ReadRoll(float *retRoll){
+void mpu6050_ReadRoll(float *retRoll, float *retDGyro, float *accelScaled, float *gyroScaled){
 	static float rollGyro = 0;
 	static float roll = 0;
+	static float DGyro = 0;
+	float alpha = 0.3f;
 
 	float accel[3], gyro[3];
 	mpu6050_ReadScaledAccelGyro(accel, gyro);
@@ -96,9 +100,19 @@ void mpu6050_ReadRoll(float *retRoll){
 	// Sensor fusion
 	roll = a*(roll+(gyro[0]*0.01f)) + (1.0f-a)*rollAcc;
 	retRoll[2] = roll;
+
+	// Gyro for D
+	DGyro = alpha * DGyro + (1.f-alpha) * gyro[0];
+	*retDGyro = DGyro;
+
+	// Scaled values for debug
+	for(int i=0; i<3; i++){
+		accelScaled[i] = accel[i];
+		gyroScaled[i] = gyro[i];
+	}
 }
 
 void mpu6050_Init(void){
-	mpu6050_WriteReg(PWR_MGMT_1, 0x00);
+	mpu6050_WriteReg(PWR_MGMT_1, 0x01);
 	HAL_Delay(100);
 }
