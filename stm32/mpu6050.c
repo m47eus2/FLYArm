@@ -52,10 +52,15 @@ void mpu6050_ReadScaledAccelGyro(float *accelScaled, float *gyroScaled){
 	mpu6050_ReadRawAccelGyro(accel, gyro);
 
 	// Scaling and biases
+//	for(int i=0; i<3; i++){
+//		accelScaled[i] = (accel[i] + accelConstBias[i]) / 16384.0f;
+//		gyroScaled[i] = (gyro[i] + gyroConstBias[i]) / 131.0f;
+//	}
+
 	for(int i=0; i<3; i++){
-		accelScaled[i] = (accel[i] + accelConstBias[i]) / 16384.0f;
-		gyroScaled[i] = (gyro[i] + gyroConstBias[i]) / 131.0f;
-	}
+			accelScaled[i] = (accel[i] + accelConstBias[i]) / 16384.0f;
+			gyroScaled[i] = (gyro[i] + gyroConstBias[i]) / 32.8f;
+		}
 }
 
 void mpu6050_ReadRawBias(int16_t *accelBias, int16_t *gyroBias){
@@ -114,5 +119,13 @@ void mpu6050_ReadRoll(float *retRoll, float *retDGyro, float *accelScaled, float
 
 void mpu6050_Init(void){
 	mpu6050_WriteReg(PWR_MGMT_1, 0x01);
+	HAL_Delay(10);
+
+	//Gyro +-1000 dps
+	mpu6050_WriteReg(0x1B, 0x10);
+
+	//Accel +- 4g
+	mpu6050_WriteReg(0x1C, 0x08);
+
 	HAL_Delay(100);
 }
