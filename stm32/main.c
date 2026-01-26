@@ -133,7 +133,14 @@ int main(void)
   while (1)
   {
 	if(dataReady==1){
-		printf(">Gyro:%f\n", gyro[0]);
+		printf(">GyroX:%f\n", gyro[0]);
+		printf(">GyroY:%f\n", gyro[1]);
+		printf(">GyroZ:%f\n", gyro[2]);
+
+		printf(">AccelX:%f\n", accel[0]);
+		printf(">AccelY:%f\n", accel[1]);
+		printf(">AccelZ:%f\n", accel[2]);
+
 		printf(">DGyro:%f\n", dGyro);
 		printf(">RollAcc:%f\n", roll[0]);
 		printf(">RollGyro:%f\n", roll[1]);

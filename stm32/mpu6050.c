@@ -19,8 +19,15 @@
 //>gyro_x:-781
 //>gyro_y:505
 //>gyro_z:-36
-const int16_t accelConstBias[3] = {269, -304, 16384-17909};
-const int16_t gyroConstBias[3] = {781, -505, 36};
+//const int16_t accelConstBias[3] = {269, -304, 16384-17909};
+//const int16_t gyroConstBias[3] = {781, -505, 36};
+
+// Biasy (4g, 1000 dps)
+// Accel: -50 15 8951
+// Gyro: -195 130 -4
+const int16_t accelConstBias[3] = {50, -15, 8192-8951};
+const int16_t gyroConstBias[3] = {195, -130, 4};
+
 const float a = 0.98f;
 
 uint8_t mpu6050_ReadReg(uint8_t reg){
@@ -58,7 +65,7 @@ void mpu6050_ReadScaledAccelGyro(float *accelScaled, float *gyroScaled){
 //	}
 
 	for(int i=0; i<3; i++){
-			accelScaled[i] = (accel[i] + accelConstBias[i]) / 16384.0f;
+			accelScaled[i] = (accel[i] + accelConstBias[i]) / 8192.0f;
 			gyroScaled[i] = (gyro[i] + gyroConstBias[i]) / 32.8f;
 		}
 }
@@ -81,7 +88,14 @@ void mpu6050_ReadRawBias(int16_t *accelBias, int16_t *gyroBias){
 		for(int i=0; i<3; i++){
 			accelBias[i] = accelAccum[i]/1000;
 			gyroBias[i] = gyroAccum[i]/1000;
+
+			accelAccum[i]=0;
+			gyroAccum[i]=0;
+
 		}
+		printf("Accel: %d %d %d\n", accelBias[0], accelBias[1], accelBias[2]);
+		printf("Gyro: %d %d %d\n", gyroBias[0], gyroBias[1], gyroBias[2]);
+		counter = 0;
 	}
 }
 
