@@ -61,13 +61,16 @@ void SystemClock_Config(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
+#define DT 0.01f
+
 float accel[3], gyro[3], roll[3];
 float dGyro, angle;
 int16_t accelBias[3], gyroBias[3];
 volatile uint8_t dataReady = 0;
 int16_t encoderValue;
-int16_t pwmValue;
+int16_t pwmValue, throttle;
 uint8_t estop = 0;
+float eAccum = 0;
 
 int __io_putchar(int ch){
 	if(ch=='\n'){
@@ -75,6 +78,28 @@ int __io_putchar(int ch){
 	}
 	HAL_UART_Transmit(&huart2, (uint8_t*)&ch, 1, HAL_MAX_DELAY);
 	return 1;
+}
+
+int16_t control(float setAngle){
+	float Kp = 5.0f;
+	float Ki = 15.0f;
+	float Kd = 0.5f;
+
+	float e = setAngle - angle;
+	eAccum = eAccum + e * DT;
+
+	//Anty-windup
+	if(eAccum > 1000.0f){eAccum = 1000.0f;}
+	if(eAccum < -1000.0f){eAccum = -1000.0f;}
+	if (estop == 1){eAccum = 0.0f;}
+	if (encoderValue == 0){eAccum = 0.0f;}
+
+	float P = Kp * e;
+	float I = Ki * eAccum;
+	float D = -1 * Kd * dGyro;
+
+	float u = P+I+D;
+	return (int16_t)u;
 }
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
@@ -91,15 +116,35 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
 		if(encoderValue < 0){encoderValue = 0;}
 		if(encoderValue > 1000){encoderValue = 1000;}
 
+		//Regulator
+		//pwmValue =
+
 		//Estop reset
-		if((HAL_GPIO_ReadPin(button_GPIO_Port, button_Pin) == GPIO_PIN_RESET) && encoderValue == 0){estop=0;}
+		if((HAL_GPIO_ReadPin(button_GPIO_Port, button_Pin) == GPIO_PIN_RESET) && encoderValue == 0 && angle < 30){estop=0;}
 
 		//Estop
 		if(angle > 130.0f){estop=1;}
 
 		//Setting PWM
-		if(estop == 0){__HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_1, 1000+encoderValue);}
-		else{__HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_1, 1000);}
+
+		// Manual from encoder
+//		if(estop == 0){__HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_1, 1000+encoderValue);}
+//		else{__HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_1, 1000);}
+
+		//From regulator
+		if(encoderValue > 130){encoderValue = 130;}
+
+		float setAngle = (float)encoderValue;
+		pwmValue = 160 + control(setAngle);
+
+		if(pwmValue < 160){pwmValue = 160;}
+		if(pwmValue > 500){pwmValue = 500;}
+
+		if((estop == 0) && encoderValue > 0){throttle = 1000+pwmValue;}
+		else{throttle = 1000;}
+
+		__HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_1, throttle);
+
 
 		dataReady = 1;
 	}
@@ -181,10 +226,13 @@ int main(void)
 		printf(">RollAcc:%f\n", roll[0]);
 		printf(">RollGyro:%f\n", roll[1]);
 		printf(">RollFused:%f\n", roll[2]);
-		printf(">Angle:%f\n", angle);
 
+		printf(">Angle:%f\n", angle);
 		printf(">Encoder:%d\n", encoderValue);
 		printf(">Estop:%d\n", estop);
+		printf(">Pwm:%d\n", pwmValue);
+		printf(">throttle:%d\n", throttle);
+		printf(">eAccum:%f\n", eAccum);
 
 		dataReady = 0;
 	}
