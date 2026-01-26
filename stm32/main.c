@@ -62,9 +62,12 @@ void SystemClock_Config(void);
 /* USER CODE BEGIN 0 */
 
 float accel[3], gyro[3], roll[3];
-float dGyro;
+float dGyro, angle;
 int16_t accelBias[3], gyroBias[3];
 volatile uint8_t dataReady = 0;
+int16_t encoderValue;
+int16_t pwmValue;
+uint8_t estop = 0;
 
 int __io_putchar(int ch){
 	if(ch=='\n'){
@@ -76,9 +79,28 @@ int __io_putchar(int ch){
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
 	if(htim == &htim6){
+		// MPU6050
+
 		//mpu6050_ReadScaledAccelGyro(accel, gyro);
 		mpu6050_ReadRoll(roll, &dGyro, accel, gyro);
+		angle = roll[2]+90.f;
 		//mpu6050_ReadRawBias(accelBias, gyroBias);
+
+		//Encoder value
+		encoderValue = __HAL_TIM_GET_COUNTER(&htim2);
+		if(encoderValue < 0){encoderValue = 0;}
+		if(encoderValue > 1000){encoderValue = 1000;}
+
+		//Estop reset
+		if((HAL_GPIO_ReadPin(button_GPIO_Port, button_Pin) == GPIO_PIN_RESET) && encoderValue == 0){estop=0;}
+
+		//Estop
+		if(angle > 130.0f){estop=1;}
+
+		//Setting PWM
+		if(estop == 0){__HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_1, 1000+encoderValue);}
+		else{__HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_1, 1000);}
+
 		dataReady = 1;
 	}
 }
@@ -117,6 +139,8 @@ int main(void)
   MX_I2C1_Init();
   MX_USART2_UART_Init();
   MX_TIM6_Init();
+  MX_TIM2_Init();
+  MX_TIM3_Init();
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */
@@ -124,11 +148,24 @@ int main(void)
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
 
+  // Encoder Init
+  HAL_TIM_Encoder_Start(&htim2, TIM_CHANNEL_ALL);
+
+  // PWM Output Init
+  HAL_TIM_Base_Start_IT(&htim3);
+  HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);
+  __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_1, 1000);
+
+  // MPU6050 Init
   HAL_Delay(1000);
   mpu6050_Init();
   HAL_Delay(1000);
 
+  // Callback Timer
   HAL_TIM_Base_Start_IT(&htim6);
+
+  //Start LED
+  HAL_GPIO_WritePin(led2_GPIO_Port, led2_Pin, GPIO_PIN_SET);
 
   while (1)
   {
@@ -141,10 +178,13 @@ int main(void)
 		printf(">AccelY:%f\n", accel[1]);
 		printf(">AccelZ:%f\n", accel[2]);
 
-		printf(">DGyro:%f\n", dGyro);
 		printf(">RollAcc:%f\n", roll[0]);
 		printf(">RollGyro:%f\n", roll[1]);
 		printf(">RollFused:%f\n", roll[2]);
+		printf(">Angle:%f\n", angle);
+
+		printf(">Encoder:%d\n", encoderValue);
+		printf(">Estop:%d\n", estop);
 
 		dataReady = 0;
 	}
