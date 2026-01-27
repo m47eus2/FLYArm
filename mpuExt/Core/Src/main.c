@@ -89,8 +89,8 @@ int16_t control(float setAngle){
 	eAccum = eAccum + e * DT;
 
 	//Anty-windup
-	if(eAccum > 1000.0f){eAccum = 1000.0f;}
-	if(eAccum < -1000.0f){eAccum = -1000.0f;}
+	if(eAccum > 22.0f){eAccum = 22.0f;}
+	if(eAccum < 0.0f){eAccum = 0.0f;}
 	if (estop == 1){eAccum = 0.0f;}
 	if (encoderValue == 0){eAccum = 0.0f;}
 
@@ -123,7 +123,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
 		if((HAL_GPIO_ReadPin(button_GPIO_Port, button_Pin) == GPIO_PIN_RESET) && encoderValue == 0 && angle < 30){estop=0;}
 
 		//Estop
-		if(angle > 130.0f){estop=1;}
+		if(angle > 170.0f){estop=1;}
 
 		//Setting PWM
 
@@ -132,7 +132,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
 //		else{__HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_1, 1000);}
 
 		//From regulator
-		if(encoderValue > 130){encoderValue = 130;}
+		if(encoderValue > 170){encoderValue = 170;}
 
 		float setAngle = (float)encoderValue;
 		pwmValue = 160 + control(setAngle);
