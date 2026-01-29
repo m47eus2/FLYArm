@@ -37,6 +37,14 @@ angles = ((angles[688:]+4) / 360) * 2*np.pi
 step = 0.01
 t = np.arange(0, len(angles)*step, step)
 
+#
+# Linearization in x=(pi/2, 0)
+#
+
+A = np.array([[0,1],[0,-b/I]])
+B = np.array([[0],[xs/I]])
+
+
 
 plt.title("Odpowiedź wahadła")
 plt.plot(res.t, res.y[0], label="Simulation")
@@ -45,3 +53,4 @@ plt.plot(t, angles, "--", label="Reference")
 plt.legend()
 plt.grid()
 plt.show()
+
