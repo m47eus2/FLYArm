@@ -107,7 +107,7 @@ int16_t lqr(){
 	float k2 = 31.36357997;
 	float u1 = -k1 * ((angle * 0.01745329f) - 1.570796f);
 	float u2 = -k2 * (dGyro * 0.01745329f);
-	float u = u1 + u2 + 258.0f;
+	float u = u1 + u2 + 242.0f;
 	return (int16_t)u;
 }
 
@@ -139,13 +139,24 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
 		if(encoderValue > 170){encoderValue = 170;}
 
 		float setAngle = (float)encoderValue;
+
+		//
+		// PID
+		//
+
 		//pwmValue = 160 + control(setAngle);
+
+		//
+		// LQR
+		//
+
 		pwmValue = 160 + lqr();
 		lqrOutput = pwmValue;
+
 		//pwmValue = 160 + encoderValue; - for manual motor control
 
 		if(pwmValue < 160){pwmValue = 160;}
-		if(pwmValue > 500){pwmValue = 500;}
+		if(pwmValue > 800){pwmValue = 800;}
 
 		if((estop == 0) && encoderValue > 0){throttle = 1000+pwmValue;}
 		else{throttle = 1000;}

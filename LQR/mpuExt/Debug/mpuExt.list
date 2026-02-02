@@ -37,15 +37,15 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   CONTENTS, READONLY, DEBUGGING, OCTETS
  16 .debug_macro  0002914a  00000000  00000000  00025266  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 17 .debug_line   00018104  00000000  00000000  0004e3b0  2**0
+ 17 .debug_line   00018106  00000000  00000000  0004e3b0  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 18 .debug_str    000f95bd  00000000  00000000  000664b4  2**0
+ 18 .debug_str    000f95bd  00000000  00000000  000664b6  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 19 .comment      00000043  00000000  00000000  0015fa71  2**0
+ 19 .comment      00000043  00000000  00000000  0015fa73  2**0
                   CONTENTS, READONLY
- 20 .debug_frame  00006008  00000000  00000000  0015fab4  2**2
+ 20 .debug_frame  00006008  00000000  00000000  0015fab8  2**2
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 21 .debug_line_str 00000062  00000000  00000000  00165abc  2**0
+ 21 .debug_line_str 00000062  00000000  00000000  00165ac0  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
 
 Disassembly of section .text:
@@ -1664,7 +1664,7 @@ int16_t lqr(){
  80011da:	ee67 7aa6 	vmul.f32	s15, s15, s13
  80011de:	ee67 7a27 	vmul.f32	s15, s14, s15
  80011e2:	edc7 7a02 	vstr	s15, [r7, #8]
-	float u = u1 + u2 + 258.0f;
+	float u = u1 + u2 + 242.0f;
  80011e6:	ed97 7a03 	vldr	s14, [r7, #12]
  80011ea:	edd7 7a02 	vldr	s15, [r7, #8]
  80011ee:	ee77 7a27 	vadd.f32	s15, s14, s15
@@ -1688,7 +1688,7 @@ int16_t lqr(){
  8001224:	3c8efa34 	.word	0x3c8efa34
  8001228:	3fc90fd8 	.word	0x3fc90fd8
  800122c:	20000268 	.word	0x20000268
- 8001230:	43810000 	.word	0x43810000
+ 8001230:	43720000 	.word	0x43720000
 
 08001234 <HAL_TIM_PeriodElapsedCallback>:
 
@@ -1799,7 +1799,11 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
  80012fa:	ee07 3a90 	vmov	s15, r3
  80012fe:	eef8 7ae7 	vcvt.f32.s32	s15, s15
  8001302:	edc7 7a03 	vstr	s15, [r7, #12]
-		//pwmValue = 160 + control(setAngle);
+
+		//
+		// LQR
+		//
+
 		pwmValue = 160 + lqr();
  8001306:	f7ff ff45 	bl	8001194 <lqr>
  800130a:	4603      	mov	r3, r0
@@ -1814,6 +1818,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
  800131a:	f9b3 2000 	ldrsh.w	r2, [r3]
  800131e:	4b29      	ldr	r3, [pc, #164]	@ (80013c4 <HAL_TIM_PeriodElapsedCallback+0x190>)
  8001320:	801a      	strh	r2, [r3, #0]
+
 		//pwmValue = 160 + encoderValue; - for manual motor control
 
 		if(pwmValue < 160){pwmValue = 160;}
@@ -1824,13 +1829,13 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
  800132c:	4b24      	ldr	r3, [pc, #144]	@ (80013c0 <HAL_TIM_PeriodElapsedCallback+0x18c>)
  800132e:	22a0      	movs	r2, #160	@ 0xa0
  8001330:	801a      	strh	r2, [r3, #0]
-		if(pwmValue > 500){pwmValue = 500;}
+		if(pwmValue > 800){pwmValue = 800;}
  8001332:	4b23      	ldr	r3, [pc, #140]	@ (80013c0 <HAL_TIM_PeriodElapsedCallback+0x18c>)
  8001334:	f9b3 3000 	ldrsh.w	r3, [r3]
- 8001338:	f5b3 7ffa 	cmp.w	r3, #500	@ 0x1f4
+ 8001338:	f5b3 7f48 	cmp.w	r3, #800	@ 0x320
  800133c:	dd03      	ble.n	8001346 <HAL_TIM_PeriodElapsedCallback+0x112>
  800133e:	4b20      	ldr	r3, [pc, #128]	@ (80013c0 <HAL_TIM_PeriodElapsedCallback+0x18c>)
- 8001340:	f44f 72fa 	mov.w	r2, #500	@ 0x1f4
+ 8001340:	f44f 7248 	mov.w	r2, #800	@ 0x320
  8001344:	801a      	strh	r2, [r3, #0]
 
 		if((estop == 0) && encoderValue > 0){throttle = 1000+pwmValue;}
