@@ -20,6 +20,7 @@ Fs = 0
 # Składnik tarcia suchego
 # - (Fc/I)*np.tanh(x[1]/0.01)
 # Fc = 0.0006
+# b = 0.00005
 
 def deg(t,x):
     dx1 = x[1]
