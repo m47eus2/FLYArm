@@ -16,7 +16,7 @@ g = 9.81
 I = (1/3)*mb*l**2 + ms*xs**2
 I = I/8.8
 
-Fs = 250
+Fs = 249
 # Składnik tarcia suchego
 # - (Fc/I)*np.tanh(x[1]/0.01)
 # Fc = 0.0006
